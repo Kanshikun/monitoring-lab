@@ -1,0 +1,45 @@
+groups:
+  - name: mc-bedrock-log-alerts
+    interval: 1m
+    rules:
+      - alert: MCBedrockStartupBackupLoop
+        expr: |
+          sum(count_over_time({container="mc-bedrock"} |= "=== 起動前バックアップ ===" [5m])) >= 3
+        for: 2m
+        labels:
+          severity: warning
+          service: mc-bedrock
+          instance: mc-bedrock
+        annotations:
+          summary: "mc-bedrock の起動前バックアップが短時間に繰り返されています"
+          description: "5分間に3回以上、起動前バックアップが実行されています。再起動ループの可能性があります。"
+
+      - alert: MCBedrockBackupFailedBurst
+        expr: |
+          sum(count_over_time({container="mc-bedrock"} |= "❌ バックアップ失敗" [5m])) >= 2
+        for: 1m
+        labels:
+          severity: warning
+          service: mc-bedrock
+          instance: mc-bedrock
+        annotations:
+          summary: "mc-bedrock のバックアップ失敗が連続しています"
+          description: "5分間に2回以上、❌ バックアップ失敗 が出ています。権限や保存先を確認してください。"
+
+      - alert: MCBedrockPreStartFailed
+        expr: |
+          (
+            sum(count_over_time({container="mc-bedrock"} |= "❌ バックアップ失敗" [5m])) >= 2
+          )
+          unless
+          (
+            sum(count_over_time({container="mc-bedrock"} |= "Server started." [5m])) > 0
+          )
+        for: 1m
+        labels:
+          severity: critical
+          service: mc-bedrock
+          instance: mc-bedrock
+        annotations:
+          summary: "mc-bedrock の起動前処理に失敗しています"
+          description: "バックアップ失敗が連続し、起動完了ログもありません。起動前処理で停止している可能性があります。"

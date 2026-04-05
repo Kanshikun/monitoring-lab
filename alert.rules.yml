@@ -1,0 +1,71 @@
+groups:
+- name: example-alerts
+  rules:
+
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Target {{ $labels.instance }} has been down for more than 1 minute."
+
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+
+  - alert: HighGPUUtilization
+    expr: DCGM_FI_DEV_GPU_UTIL > 90
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High GPU usage detected"
+
+  - alert: MinecraftBedrockDown
+    expr: minecraft_status_healthy{server_edition="bedrock"} == 0
+    for: 2m
+    labels:
+      severity: critical
+      service: mc-bedrock
+    annotations:
+      summary: "Bedrock server is down"
+      description: "Minecraft Bedrock server is not responding for 2 minutes."
+
+  - alert: MinecraftBedrockHighLatency
+    expr: (
+            minecraft_status_healthy{server_edition="bedrock"} == 1
+          )
+          and
+          (
+            minecraft_status_response_time_seconds{server_edition="bedrock"} > 1
+          )
+    for: 5m
+    labels:
+      severity: warning
+      service: mc-bedrock
+    annotations:
+      summary: "Bedrock server latency is high"
+      description: "Minecraft Bedrock response time is above 1 second for 5 minutes."
+
+  - alert: MinecraftBedrockVeryHighLatency
+    expr: (
+            minecraft_status_healthy{server_edition="bedrock"} == 1
+          )
+          and
+          (
+            minecraft_status_response_time_seconds{server_edition="bedrock"} > 3
+          )
+    for: 5m
+    labels:
+      severity: critical
+      service: mc-bedrock
+    annotations:
+      summary: "Bedrock server latency is very high"
+      description: "Minecraft Bedrock response time is above 3 seconds for 5 minutes."
+
