@@ -1,0 +1,16 @@
+# monitoring-lab
+
+Minecraft Bedrock server を題材にした監視設計の検証環境
+
+## 構成
+- Prometheus
+- Loki
+- Alertmanager
+- Grafana
+
+## 特徴
+- 外形監視 + 内部監視 + ログ監視の統合
+- 障害再現ベースでの監視設計
+
+## 記事
+https://qiita.com/xxxx
